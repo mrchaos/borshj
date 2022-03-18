@@ -1,14 +1,41 @@
-apply plugin: 'java'
+apply plugin: 'java' 
+apply plugin: 'maven-publish' 
 
-jar {
-  archiveBaseName = 'borshj'
-  archiveVersion  = rootProject.file('VERSION').text.trim()
-  manifest {}
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = "sources"
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'org.near'
+            artifactId = 'borshj'
+            version=rootProject.file('VERSION').text.trim()
+            artifact './build/libs/borshj-'+rootProject.file('VERSION').text.trim()+'.jar'
+            artifact sourceJar    
+        }
+    }
+    repositories {
+        maven {       
+            version=rootProject.file('VERSION').text.trim()
+            url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepo : mavenRepo
+            credentials { 
+                username mavenUser
+                password mavenPassword
+            }
+        }
+    }
+}
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+jar { 
+  archiveBaseName = 'borshj'
+  archiveVersion  = rootProject.file('VERSION').text.trim()
+  manifest {}
 }
 
 test {
@@ -17,7 +44,7 @@ test {
 
 repositories {
   mavenCentral()
-  google()
+  google()  
 }
 
 dependencies {
